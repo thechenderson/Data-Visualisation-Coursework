@@ -19,7 +19,7 @@
             femalecount = 0
 
             d3.csv(titaniccsv, function(data) {
-                console.log( data.Name );
+                console.log( data.Name )
                 if(data.Name.includes("Mr") || data.Name.includes("Mrs")){
                     mrmrscount++
                 }
