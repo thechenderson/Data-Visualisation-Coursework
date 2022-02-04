@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <script src='https://d3js.org/d3.v7.min.js'></script>
+        </head>
+        <body>
+
+            
+            <script>
+                //Script to log d3 version to console
+                console.log('d3.version:', d3.version);
+            </script>
+
+            <p>First paragraph</p>
+            <p>Second paragraph</p>
+            <script>
+                //Script to modify css attributes of paragraph
+                d3.select("p").style("color", "red");
+                d3.select("p").style("font-weight", "bold");
+                d3.select("p").style("font-family", "sans-serif")
+            </script>
+
+            <style>
+                .test {
+                color:'red'
+                }
+            </style>
+            <p class="blue">Third paragraph</p>
+            <p>Fourth paragraph</p>
+            <p class="blue">Fifth paragraph</p>
+            <script>
+                //Exercise 1
+                d3.selectAll(".blue").style('color','blue');
+            </script>
+
+
+            <span>Test</span>
+            <script>
+                //Exercise 2
+                let newspan = d3.select("body").append('h1');
+                newspan.text('hello');
+            </script>
+
+            <script>
+                //Exercise 3
+                for (let i = 1; i < 11; i++) {
+                        let newdiv = d3.select("body").append("div")
+                        newdiv.text(i)
+                        if (i<=5) {
+                            newdiv.style("color", "red")
+                        }
+                        if (i>5) {
+                            newdiv.style("color", "green")
+                        }
+                }
+            </script>
+
+            <script>
+                //Exercise 4
+                d3.select("div").text("start").style("color", "purple")
+            </script>
+            
+
+            <script>
+                //Exercise 5
+                var bodyElement = d3.select("body");
+                var div = bodyElement.append("div");
+                div.text("Hello World!");
+                // same as
+                d3.select("body").append("div").text("Hello World!").style("color", "green");
+            </script>
+   
+
+
+        </body>
+</html>
