@@ -1,0 +1,47 @@
+
+<!--
+Author - Christohper Henderson
+Data Visualisation and Analytics
+-->
+
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <script src='https://d3js.org/d3.v7.min.js'></script>
+        </head>
+        <body>
+            <script>
+                //Create the svg canvas
+                const svg = d3.select('body')
+                .append('svg')
+                .attr('width', 1000)
+                .attr('height', 1000);
+
+                //Add circle to SVG
+                svg.append('circle')
+                .attr('cx', 100)
+                .attr('cy', 100)
+                .attr('r', 50)
+                .attr('fill', 'blue')
+                .attr("id", "circle");
+                
+                //Select the circle
+                var circle = d3.select("#circle")
+
+                //Change radius on mouseover
+                 .on("mouseover", function(event){
+                     circle.attr("r", 100)
+                     
+                 // Get current event info
+                 // Note: d3.event (event) passed as the first argument to all listeners
+                 console.log(event);
+                 // Get x & y co-ordinates
+                 console.log(d3.pointer(event));
+                 })
+                 .on("mouseout", function(){
+                    circle.attr("r", 50)
+                });
+            </script>
+          
+        </body>
+    </html>

@@ -1,0 +1,56 @@
+
+<!--
+Author - Christohper Henderson
+Data Visualisation and Analytics
+-->
+
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <script src='https://d3js.org/d3.v7.min.js'></script>
+        </head>
+        <body>
+            <script>
+                const svg = d3.select('body')
+                .append('svg')
+                .attr('width', 1000)
+                .attr('height', 1000);
+
+                svg.append('circle')
+                .attr('cx', 200)
+                .attr('cy', 200)
+                .attr('r', 200)
+                .attr('fill', 'blue')
+                .attr("id", "circle");
+                
+                var followText = svg.append("text")
+                .attr("width", "30")
+                .attr("height", "10")
+                .text("WASSUP")
+
+                var circle = d3.select("#circle")
+
+                 .on("mousemove", function(event){
+
+                // Get current event info
+                 // Note: d3.event (event) passed as the first argument to all listeners
+                 // Get x & y co-ordinates
+                 console.log(d3.pointer(event));
+
+                 //Store mouse location and place text at location
+                var mouseCoordinates = d3.pointer(event)
+                
+                followText
+                .attr("x", mouseCoordinates[0])
+                .attr("y", mouseCoordinates[1])
+               
+                
+                 })
+                 .on("mouseout", function(){
+                   //THIS BIT SHOULD WORK BUT DOESN'T 
+                   //followText.text("")
+                });
+            </script>
+          
+        </body>
+    </html>

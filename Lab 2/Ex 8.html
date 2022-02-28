@@ -1,0 +1,50 @@
+
+<!--
+Author - Christohper Henderson
+Data Visualisation and Analytics
+-->
+
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <script src='https://d3js.org/d3.v7.min.js'></script>
+        </head>
+        <body>
+            <script>
+                d3.select('body')
+                 .append("div")
+                 .attr("id", "rectangle")
+                 .style('width', '100px')
+                 .style('height', '100px')
+                 .style('background-color', 'blue')
+                 .transition()
+                 .duration(2000)
+                 .style("background-color", "red")
+                 .transition()
+                 .duration(2000)
+                 .style("background-color", "green")
+                 
+
+                 var rectangle = d3.select("#rectangle")
+
+                .on("mouseover", function(event){
+                rectangle.transition()
+                 .duration(2000)
+                 .style("width", "200px")
+                 .transition()
+                 .duration(2000)
+                 .style("height", "50px");
+                 })
+
+                 .on("mouseout", function(){
+                    rectangle.transition()
+                 .duration(2000)
+                 .style("width", "100px")
+                 .transition()
+                 .duration(2000)
+                 .style("height", "100px");
+                });
+                </script>
+          
+        </body>
+    </html>

@@ -1,0 +1,26 @@
+
+<!--
+Author - Christohper Henderson
+Data Visualisation and Analytics
+-->
+
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <script src='https://d3js.org/d3.v7.min.js'></script>
+        </head>
+        <body>
+
+            
+            <script>
+                let startDate=new Date()
+                console.log("Start date: ", startDate);
+                let endDate=new Date();
+                endDate=endDate.setDate(endDate.getDate() + 10);
+                console.log("End date: ", endDate);
+                console.log(
+                d3.interpolateDate(startDate, endDate)(1)) 
+            </script>   
+        </body>
+    </html>
+
