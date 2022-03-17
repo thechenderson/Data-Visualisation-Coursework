@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 11</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  d3.select('body')
+    .append("svg")
+    .style('width', '500px')
+    .style('height', '500px')
+    .style('background-color', 'blue')
+    .append('text')
+    .attr('x', '20')
+    .attr('y', '250')
+    .style('font', 'italic 20px serif')
+    .text('Hello World!')
+    .on('mouseover', function () {
+      d3.select(this)
+        .transition()
+        .ease(d3.easeElastic)
+        .duration(1000)
+        .style('fill', 'red')
+        .style('font', 'italic 40px serif')
+    })
+    .on('mouseout', function () {
+      d3.select(this)
+        .transition()
+        .ease(d3.easeElastic)
+        .duration(1000)
+        .style('fill', 'black')
+        .style('font', 'italic 20px serif')
+    });
+</script>
+
+</script>
+</script>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 8</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  function setDefaultDivProperties(animated = false) {
+    function changeStyles(divSelection) {
+      if (animated) {
+        divSelection = divSelection.transition()
+          .duration(1000)
+      }
+
+      divSelection
+        .style('width', '100px')
+        .style('height', '100px')
+        .style('background-color', 'blue');
+    }
+
+    d3.select('div')
+      .call(changeStyles)
+  }
+
+  d3.select('body')
+    .append("div");
+
+  setDefaultDivProperties();
+
+  d3.select('div')
+    .on('mouseover', function () {
+      d3.select(this)
+        .transition()
+        .duration(1000)
+        .style("background-color", "red")
+        .transition()
+        .duration(2000)
+        .style('background-color', 'green')
+        .style('width', '200px')
+        .style('height', '200px');
+    })
+    .on('mouseout', function () {
+      setDefaultDivProperties(true);
+    })
+
+</script>
+</script>
+</html>

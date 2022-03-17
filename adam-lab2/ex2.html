@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 2</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  d3.select('body')
+    .append('span')
+    .text('Hover over me!')
+    .attr('class', 'moreInfoLabel');
+
+  d3.select('body')
+    .append('p')
+    .text('I will show on hover')
+    .attr('id', 'moreInfo');
+</script>
+<style>
+  :root {
+    --fade-in-duration: 1s;
+    --fade-in-transition: visibility var(--fade-in-duration), opacity var(--fade-in-duration);
+  }
+
+  #moreInfo {
+    visibility: hidden;
+    opacity: 0;
+    transition: var(--fade-in-transition);
+  }
+
+  .moreInfoLabel:hover ~ #moreInfo {
+    visibility: visible;
+    opacity: 1;
+    transition: var(--fade-in-transition)
+  }
+</style>
+</html>

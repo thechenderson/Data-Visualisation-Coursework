@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 13</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  const svg = d3.select("body")
+    .append("svg")
+    .attr("width", 500)
+    .attr("height", 500);
+
+
+  const bar1 = svg.append("rect")
+    .attr("fill", "blue")
+    .attr("x", 100)
+    .attr("y", 20)
+    .attr("height", 20)
+    .attr("width", 10);
+
+  const bar2 = svg.append("rect")
+    .attr("fill", "blue")
+    .attr("x", 120)
+    .attr("y", 20)
+    .attr("height", 20)
+    .attr("width", 10);
+
+  const bar3 = svg.append('rect')
+    .attr('fill', 'blue')
+    .attr('x', 140)
+    .attr('y', 20)
+    .attr('height', 20)
+    .attr('width', 10)
+
+  update();
+
+  function update() {
+    bar1.transition()
+      .ease(d3.easeLinear)
+      .duration(2000)
+      .attr("height", 100)
+      .transition()
+      .ease(d3.easeLinear)
+      .delay(6000)
+      .attr('height', 20)
+
+    bar2.transition()
+      .ease(d3.easeLinear)
+      .duration(2000)
+      .delay(2000)
+      .attr("height", 100)
+      .transition()
+      .ease(d3.easeLinear)
+      .delay(6000)
+      .attr('height', 20)
+
+    bar3.transition()
+      .ease(d3.easeLinear)
+      .duration(2000)
+      .delay(4000)
+      .attr('height', 100)
+      .transition()
+      .ease(d3.easeLinear)
+      .delay(6000)
+      .attr('height', 20)
+  }
+</script>
+
+</script>
+</script>
+</html>

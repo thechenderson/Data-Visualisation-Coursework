@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 29</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  const width = 400, height = 400;
+
+  // setup svg
+  d3.select('body').append('svg').attr('width',width).attr('height',height);
+
+  // generate some random data
+  const numNodes = 100;
+  const nodes = [
+    {radius: 5}, {radius: 15}, {radius: 30},
+    {radius: 7}, {radius: 14}, {radius: 21},
+    {radius: 13}, {radius: 40}, {radius: 25},
+    {radius: 42}, {radius: 31}, {radius: 35},
+  ]
+
+  const randomColors = Array.from({length: numNodes}, () => `#${(Math.random() * (1 << 24) | 0).toString(16)}`)
+
+  const simulation = d3.forceSimulation(nodes)
+    .force('charge', d3.forceManyBody().strength(5))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(function(d) {
+      return d.radius
+    }))
+    .on('tick', ticked);
+
+  function ticked() {
+    const u = d3.select('svg')
+      .selectAll('circle')
+      .data(nodes)
+      .join('circle')
+      .attr('fill', (_, i) => randomColors[i])
+      .attr('r', function(d) {
+        return d.radius
+      })
+      .attr('cx', function(d) {
+        return d.x
+      })
+      .attr('cy', function(d) {
+        return d.y
+      })
+  }
+  console.log('ready..');
+</script>
+</html>

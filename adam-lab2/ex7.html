@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 7</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  d3.select('body')
+    .append("div")
+    .style('width', '100px')
+    .style('height', '100px')
+    .style('background-color', 'blue')
+    .transition()
+    .duration(1000)
+    .style("background-color", "red")
+    .transition()
+    .duration(2000)
+    .style('background-color', 'green')
+    .style('width', '200px')
+    .style('height', '200px');
+</script>
+</script>
+</html>

@@ -1,0 +1,137 @@
+<!--
+Author: Christohper Henderson
+Project: Data Visualisation and Analytics Lab 3
+Date: 14/03/22
+URL: https://github.com/thechenderson/Data-Visualisation-Coursework
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Vaccine Dashboard 1</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src='https://d3js.org/d3.v7.min.js'></script>
+    </head>
+    <body>
+
+        <!--Vaccinations data can be found here:
+        https://github.com/owid/covid-19-data/tree/master/public/data/vaccinations
+        -->
+
+        <button onclick="update(vaccData)">Dataset 1</button>
+        <button onclick="update(data2)">Dataset 2</button>
+        <button onclick="update(data3)">Dataset 3</button>
+        
+        
+    <script>
+
+        //Set the dimensions and margins of the graph
+        const margin = {top: 30, right: 30, bottom: 70, left: 30};
+        const width = window.innerWidth - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+
+        //Append the svg object to the body of the page
+        var svg = d3.select('body')
+            .append('div')
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+        // X axis
+        var x = d3.scaleBand()
+            .range([0, width])
+            .padding(0.2);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+        
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .range([ height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y))
+
+
+
+
+
+
+
+
+
+        //The vaccinations dataset location
+        const vaccinationsCSV = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv';
+
+
+
+
+        //Create dataset 1 - United Kingdom 
+        const vaccData1 = (d3.csv(vaccinationsCSV).then(function(data){
+            
+            //Filter dataset for UK and dates from 2021
+            filteredVaccData1 = data.filter(function(d) { 
+                if((d["location"] == "United Kindgdom") && (d["date"].contains("2021")))
+                { 
+                    return d;
+                } 
+            })
+            
+            //Set the domain for x to the 
+            x.domain(filteredVaccData1.map(function(d) { return d.date; }))
+            y.domain([0, d3.max(filteredVaccData1, function(d){return d.total_vaccinations})])
+        }))
+
+        const vaccData2 = (d3.csv(vaccinationsCSV).filter(function(d){
+            if((d["location"] == "United Kindgdom") && (d["date"].contains("2021")))
+                { 
+                    return d;
+                }
+
+            x.domain(data.map(function(d) { return d.location; }))
+            y.domain([0, d3.max(data, function(d){return d.total_vaccinations})])
+        }))
+
+        const vaccData3 = (d3.csv(vaccinationsCSV).then(function(data){
+            x.domain(data.map(function(d) { return d.location; }))
+            y.domain([0, d3.max(data, function(d){return d.total_vaccinations})])
+        }))
+
+        
+        
+        // A function that creates / update the plot for a given dataset:
+        function update(data) {
+            var u = svg.selectAll("rect")
+                .data(data)
+
+            u.enter()
+                .append("rect")
+                .merge(u)
+                .transition()
+                .duration(1000)
+                .attr("x", function(d) { return x(d.location); })
+                .attr("y", function(d) { return y(d.total_vaccinations); })
+                .attr("width", x.bandwidth())
+                .attr("height", function(d) { return height - y(d.total_vaccinations); })            
+        }
+
+        
+        // Initialize the plot with the first dataset
+        update(vaccData1)
+        
+        
+
+
+    </script>
+
+
+        
+    </body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 5</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  d3.select('body')
+    .append('svg')
+    .style('width', '500px')
+    .style('height', '500px')
+    .style('background-color', 'skyblue');
+
+  d3.selectAll("svg")
+    .on("mouseenter", function (event) {
+      d3.select(this)
+        .append('text')
+        .attr('x', () => d3.pointer(event)[0])
+        .attr('y', () => d3.pointer(event)[1])
+        .text('Hello!')
+    })
+    .on("mouseout", () => {
+      d3.select('text')
+        .remove();
+    });
+
+  d3.select('svg')
+    .on('mousemove', function (event) {
+      let x = d3.pointer(event)[0];
+      let y = d3.pointer(event)[1] - 5;
+      d3.select('text')
+        .attr('x', x)
+        .attr('y', y)
+    })
+</script>
+</html>

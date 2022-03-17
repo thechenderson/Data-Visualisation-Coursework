@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 9</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+</body>
+<script>
+  function createDiv(color, easingMethod) {
+    d3.select('body')
+      .append("div")
+      .style('width', '100px')
+      .style('height', '100px')
+      .style('background-color', 'blue')
+      .style('transform', 'scale(1.0)')
+      .transition()
+      .ease(easingMethod)
+      .duration(1000)
+      .style("background-color", color)
+      .style('transform', 'scale(0.5)')
+  }
+
+  createDiv('red', d3.easeBounce);
+  createDiv('green', d3.easeExp);
+  createDiv('blue', d3.easeElastic);
+</script>
+
+</script>
+</script>
+</html>

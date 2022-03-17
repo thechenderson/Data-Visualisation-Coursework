@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>F21DV - Exercise 23</title>
+  <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+<body>
+<!-- Add buttons -->
+<button onclick="showData(data1, 'red')">Variable 1</button>
+<button onclick="showData(data2, 'blue')">Variable 2</button>
+</body>
+<script>
+  // create 2 data_set
+  const data1 = [
+    5, 3, 15, 20, 1, 2, 3, 0, 10
+  ].map((val, i) => new Object({x: i, y: val}));
+
+  const data2 = [
+    10, 5, 15, 3, 7, 13, 14
+  ].map((val, i) => new Object({x: i, y: val}));
+
+  // Set Dimensions
+  const xSize = 600;
+  const ySize = 600;
+  const margin = 40;
+  const xMax = xSize - margin * 2;
+  const yMax = ySize - margin * 2;
+
+  // Get the 'limits' of the data - the full extent (mins and max)
+  // so the plotted data fits perfectly
+  const xExtent = d3.extent(data1, d => {
+    return d.x
+  });
+  const yExtent = d3.extent(data1, d => {
+    return d.y
+  });
+  // Append SVG Object to the Page
+  const svg = d3.select("body")
+    .append("svg")
+    .attr('width', xSize)
+    .attr('height', ySize)
+    .append("g")
+    .attr("transform", "translate(" + margin + "," + margin + ")");
+  
+  
+    // X Axis
+  const x = d3.scaleLinear()
+    .domain([xExtent[0], xExtent[1]])
+    .range([0, xMax]);
+
+  svg.append("g")
+    .attr('id', 'xAxis')
+    .attr("transform", "translate(0," + yMax + ")")
+    .call(d3.axisBottom(x))
+    .attr('color', 'green'); // make bottom axis green
+
+  
+  
+    // Y Axis
+  const y = d3.scaleLinear()
+    .domain([yExtent[0], yExtent[1]])
+    .range([yMax, 0]);
+
+  svg.append("g")
+    .attr('id', 'yAxis')
+    .call(d3.axisLeft(y));
+  // right y axis
+
+  showData(data1, 'red');
+
+
+
+
+
+
+  function showData(data, lineColor) {
+    // Get the 'limits' of the data - the full extent (mins and max)
+    // so the plotted data fits perfectly
+    const xExtent = d3.extent(data, d => {
+      return d.x
+    });
+    const yExtent = d3.extent(data, d => {
+      return d.y
+    });
+
+    const x = d3.scaleLinear()
+      .domain([xExtent[0], xExtent[1]])
+      .range([0, xMax]);
+
+    const y = d3.scaleLinear()
+      .domain([yExtent[0], yExtent[1]])
+      .range([yMax, 0]);
+
+    d3.select('#xAxis')
+      .transition()
+      .duration(1000)
+      .call(d3.axisBottom(x));
+
+    d3.select('#yAxis')
+      .transition()
+      .duration(1000)
+      .call(d3.axisLeft(y));
+
+    svg.select('#dataLine')
+      .transition()
+      .duration(1000)
+      .style('opacity', 0)
+      .remove();
+
+    svg.append('path')
+      .attr('id', 'dataLine')
+      .datum(data)
+      .style('opacity', 0)
+      .attr("fill", "none")
+      .attr("stroke", lineColor)
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(function (d) {
+          return x(d.x)
+        })
+        .y(function (d) {
+          return y(d.y)
+        })
+      )
+      .transition()
+        .duration(1000)
+        .delay(500)
+        .style('opacity', 1)
+  }
+</script>
+
+</script>
+</script>
+</html>

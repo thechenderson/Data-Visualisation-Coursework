@@ -60,9 +60,10 @@ Data Visualisation and Analytics
                  .text("Year");
 
                  g.append("g")
-                 .call(d3.axisLeft(y).tickFormat(function(d){
-                 return "$" + d;
-                 }).ticks(10))
+                 .call(d3.axisLeft(y)
+                    .tickFormat(function(d){
+                        return "$" + d;
+                    }).ticks(10))
                  .append("text")
                  .attr("transform", "rotate(-90)")
                  .attr("y", 6)
