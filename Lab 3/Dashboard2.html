@@ -26,10 +26,14 @@ URL: https://github.com/thechenderson/Data-Visualisation-Coursework
         <button onclick="drawGraph(data3)">Dataset 3</button>
         
         
+
         <script>
+
+            
 
             //The vaccinations dataset location
             const vaccinationsCSV = 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv';
+
 
             //Set the dimensions and margins of the graph
             const margin = {top: 30, right: 30, bottom: 70, left: 80};
@@ -96,10 +100,10 @@ URL: https://github.com/thechenderson/Data-Visualisation-Coursework
                     .attr("stroke-width", 1.5)
                     .attr("d", d3.line()
                         .x(function(d){
-                            return x(d.date)
+                            return xScale(d.date)
                         })
                         .y(function(d){
-                            return x(d.total_vaccinations)
+                            return yScale(d.total_vaccinations)
                         })
                     )
             }
