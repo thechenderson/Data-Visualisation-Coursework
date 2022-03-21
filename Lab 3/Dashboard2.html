@@ -74,7 +74,13 @@ URL: https://github.com/thechenderson/Data-Visualisation-Coursework
                 const yExtent = d3.extent(data, function(d){
                     return d.total_vaccinations
                 })
+
+                console.log(yExtent[0]+"       " + yExtent[1])
+                console.log(xExtent[0]+"       " + xExtent[1])
+
                 
+
+
                 //Create the axes
                 const xScale = d3.scaleTime()
                     .domain([xExtent[0], xExtent[1]])

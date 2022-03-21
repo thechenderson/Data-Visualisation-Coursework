@@ -78,15 +78,15 @@ URL: https://github.com/thechenderson/Data-Visualisation-Coursework
                                             .then(data => filterVaccData(data,d.properties.name))
 
                                         console.log("Total vaccinatons for " + d.properties.name + ": " )
-                                        // tooltip.style("opacity", 1).html(d.properties.name + "<br>"/* + getVaccData(d.properties.name)*/)                        
                             })
                             
                             .on("mousemove",function(event, d){
                                 tooltip.style("opacity", 1)
                                 .style("left", (event.x)-80 + "px")
                                 .style("top", (event.y)-80 + "px")
-                                // .html(d.properties.name + "<br>"/*+ getVaccData(d.properties.name)*/)
-                            })
+                                d3.csv(vaccCSV)
+                                            .then(data => getVaccData(data))
+                                            .then(data => filterVaccData(data,d.properties.name))                            })
                             
                             .on("mouseout", function (event, d) {
                                 d3.select(this)
@@ -112,8 +112,9 @@ URL: https://github.com/thechenderson/Data-Visualisation-Coursework
                       }
                   })
                 console.log(filteredVaccData[0].total_vaccinations)
+                reverseFilteredData = filteredVaccData.reverse()
                 d3.select("div.tooltip")
-                    .style("opacity", 1).html(country + "<br> Total Vaccinations: "+ filteredVaccData[0].total_vaccinations + "<br> People Fully Vaccinated: " + filteredVaccData[0].people_fully_vaccinated)
+                    .style("opacity", 1).html(country + "<br> Total Vaccinations: "+ reverseFilteredData[0].total_vaccinations + "<br> People Fully Vaccinated: " + reverseFilteredData[0].people_fully_vaccinated + "<br>Date: " + reverseFilteredData[0].date)
                     .style("text-align", "center")
 
 
