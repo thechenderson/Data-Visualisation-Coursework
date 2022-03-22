@@ -1,0 +1,200 @@
+<!--
+Author: Christohper Henderson
+Project: Data Visualisation and Analytics Lab 3
+Date: 14/03/22
+URL: https://github.com/thechenderson/Data-Visualisation-Coursework
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Vaccine Dashboard</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src='https://d3js.org/d3.v7.min.js'></script>
+
+    </head>
+    <body>
+        <h1 >Hover over the map to see how the cases for a country have developed...</h1>
+        <a href="http://localhost:5500/Lab%203/Vaccinations%20Dashboard.html">GO TO VACCINATIONS DASHBOARD</a>
+
+        <!-- Create an element where the map will take place -->
+        <svg style = "display:block; margin:auto" class="map" width="1920" height="450"></svg>
+        <svg style = "display:block; margin:auto" class="graph" width="1200" height="450"></svg>
+
+
+        <div class="tooltip"></div>
+
+        <style>
+            div.tooltip {
+                color: rgb(0, 0, 0); 
+                font-size: 20;
+                font-family:Arial, Helvetica, sans-serif;
+                background: rgb(4, 147, 241); 
+                border-radius: 3px; 
+                box-shadow: 0px 0px 2px 0px #a6a6a6; 
+                padding: .2em; 
+                opacity: 0.9; 
+                position: fixed;
+            }
+        </style>
+        
+        <script>
+            // The svg
+            const mapsvg = d3.select("svg.map"),
+                mapwidth = +mapsvg.attr("width"),
+                mapheight = +mapsvg.attr("height");
+            
+            const graphsvg = d3.select("svg.graph"),
+                graphwidth = +graphsvg.attr("width"),
+                graphheight = +graphsvg.attr("height");
+
+
+            // Map and projection
+            const projection = d3.geoNaturalEarth1()
+                .scale(mapwidth / 4 / Math.PI)
+                .translate([mapwidth / 2, mapheight / 2])
+
+            
+            const vaccCSV = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv"
+            const casesCSV = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/full_data.csv"
+            const worldJSON = "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"
+
+            //record the current date (https://flaviocopes.com/how-to-get-yesterday-date-javascript/)
+            today = new Date() //Get today's date
+
+            //Set yesterday's date to today's date - 1
+            const yesterday = new Date(today)
+            yesterday.setDate(yesterday.getDate() - 1)
+
+            //Remove the hours from the date to allow for searching in CSV
+            yesterday.setHours(0,0,0,0)
+            yesterday.toDateString()
+            
+
+            //Create the map from the JSON file
+            d3.json(worldJSON).then(function(data) {
+                var tooltip = d3.select("div.tooltip");
+
+                // Draw the map
+                mapsvg.append("g")
+                    .selectAll("path")
+                    .data(data.features)
+                    .enter()
+                        .append("path")
+                            .attr("fill", "gray")
+                            .attr("d", d3.geoPath().projection(projection))
+                            .style("stroke", "#fff")
+
+                            .on("mouseover", function (event, d) {
+                                //Clear existing graph line
+                                clearGraph()
+
+                                d3.select(this)
+                                    .transition()
+                                        .style("fill", "red")
+                                        .duration(300)
+                                        d3.csv(casesCSV)
+                                            .then(data => updateData(data, d.properties.name))
+                            })
+
+                            .on("mouseout", function (event, d) {
+
+                                //Clear existing graph elements
+                                clearGraph()
+                                d3.select(this)
+                                    .transition()
+                                        .style("fill", "gray")
+                                        .duration(600)
+                                        tooltip.style("opacity", 0)
+                                    })
+                            
+                            .on("mousemove", function(event, d){
+                                tooltip.style("opacity", 1)
+                                .style("left", (event.x)-80 + "px")
+                                .style("top", (event.y)-80 + "px")
+                            })
+                            
+                            
+            })
+
+            //Function to remove lines from graph
+            function clearGraph(){
+                graphsvg.selectAll("#graphLine")
+                        .remove()
+            }
+
+            //Function to update the graph and tooltip to show data about the country being hovered over
+            function updateData(data, country) {
+                
+                //Filter the data to the country that is being hovered over
+                filteredCaseData = d3.filter(data, function(d){
+                      if(d.location == country && d.new_cases!=0){
+                          return d
+                      }
+                  })
+
+                  console.log(filteredCaseData)
+                  
+                //Log to console to verify correct country
+                console.log("Acquiring case data for: "+ country +"...")
+                
+                //Reverse the data to show the most recent vaccination values in the tooltip (csv orders them oldest to newest)
+                reverseFilteredData = filteredCaseData.reverse()
+
+                //Show to tooltip with vaccination data
+                d3.select("div.tooltip")
+                .style("opacity", 1).html(country + "<br> New Cases: "+ filteredCaseData[0].new_cases +"<br>Date: " + filteredCaseData[0].date)
+                .style("text-align", "center")
+
+                    
+                //Set the maximum and minimum values for the axes of the graph (d3.extent returns the max and min of an array in an array)
+                const xExtent = d3.extent(reverseFilteredData, function(d){
+                    return d3.timeParse("%Y-%m-%d")(d.date) //Parse the date into JS format so D3 can read (defaults to string when read from CSV)
+                })
+                const yExtent = d3.extent(reverseFilteredData, function(d){
+                    return +d.new_cases //Parse the total vaccinations as integers, strings by default
+                })
+
+
+                //Create the scale for the x and y axis
+                const xScale = d3.scaleTime()
+                    .domain([xExtent[0], xExtent[1]])
+                    .range([0, graphwidth])
+                    console.log("xExtent: "+xExtent)
+                const yScale = d3.scaleLinear()
+                    .domain([yExtent[0], yExtent[1]])
+                    .range([graphheight, 0])
+                    console.log("yExtent: "+ yExtent)
+
+                //Add the x and y axes to the graph
+                graphsvg.append("g")
+                    .attr("transform", "translate(0,"+graphheight+")")
+                        .call(d3.axisBottom(xScale))
+                graphsvg.append("g")
+                        .call(d3.axisLeft(yScale))
+                
+                
+                // Add the line from the vaccine data for the selected country
+                graphsvg.append("path")
+                .attr("id", "graphLine")
+                    .datum(reverseFilteredData)
+                    .attr("fill", "none")
+                    .attr("stroke", "red")
+                    .attr("stroke-width", 5)
+                    .attr("d", d3.line()
+                    .x(function(d) {
+                        return xScale(d3.timeParse("%Y-%m-%d")(d.date)) })
+                    .y(function(d) { 
+                        return yScale(+d.new_cases) 
+                    })
+                    )
+            }
+
+
+
+        </script>
+    </body>
+</html>
