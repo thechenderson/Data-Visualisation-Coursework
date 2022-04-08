@@ -1,0 +1,473 @@
+<!--
+Author: Christohper Henderson
+Project: Data Visualisation and Analytics Lab 3
+Date: 14/03/22
+URL: https://github.com/thechenderson/Data-Visualisation-Coursework
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>COVID MAP DASHBOARD</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src='https://d3js.org/d3.v7.min.js'></script>
+
+    </head>
+    <body>
+		<h1 style="text-align: center;">Hover over the map to see to most recent case data for each country. <br> Click to see how the data has developed over time.</h1>
+		<div style="display: block; margin: auto; text-align: center;" id="visualisationArea"></div>
+
+        
+        <!--Div to use as tooltip-->
+        <div class="tooltip" style="opacity: 0"></div>
+
+        <style>
+            div.tooltip {
+                color: rgb(0, 0, 0); 
+                font-size: 20;
+                font-family:Arial, Helvetica, sans-serif;
+                background: rgb(4, 147, 241); 
+                border-radius: 3px; 
+                box-shadow: 0px 0px 2px 0px #a6a6a6; 
+                padding: .2em; 
+                opacity: 0.9; 
+                position: fixed;
+            }
+
+			svg.map {
+                display: block; 
+				margin: auto;
+				padding-bottom: 2rem;
+            }
+
+			svg.vaccGraph {
+                display: inline; 
+				margin: auto;
+            }
+
+			svg.caseGraph {
+                display: inline; 
+				margin: auto;
+            }
+
+			svg.deathChart {
+                display: inline; 
+				margin: auto;
+            }
+        </style>
+
+        <script>
+
+//----------------------MAP SETUP-----------------------------
+
+			// Set the dimensions of the map
+			var mapwidth = 800,
+				mapheight = 400;
+
+			//Append the map SVG
+			d3.select("#visualisationArea")
+				.append("svg")
+					.attr("width", mapwidth)
+					.attr("height", mapheight)
+					.attr("class", "map")
+
+			const mapsvg = d3.select("svg.map")			  
+
+        	//Set what area of the map to show
+        	const projection = d3.geoMercator()
+        	.center([0, 0])
+        	    .scale(99)
+        	    .translate([mapwidth / 2, mapheight / 2])
+
+//--------------------DEFAULT GRAPH SIZE SETUP--------------------------
+
+			// Set the dimensions and margins of the graphs
+			var graphMargin = {top: 10, right: 30, bottom: 30, left: 30},
+			    graphWidth = 800 - graphMargin.left - graphMargin.right,
+			    graphHeight = 400 - graphMargin.top - graphMargin.bottom;
+
+
+//----------------------VACC GRAPH SETUP---------------------------------
+
+
+			d3.select("#visualisationArea")
+				.append("svg")
+					.attr("class", "vaccGraph")
+			    	.attr("width", graphWidth + graphMargin.left + graphMargin.right)
+			    	.attr("height", graphHeight + graphMargin.top + graphMargin.bottom)
+			  	.append("g")
+			    	.attr("transform", "translate(" + graphMargin.left + "," + graphMargin.top + ")")
+
+			const vaccsvg = d3.select("svg.vaccGraph")			  
+
+
+			//Create the scale for the x and y axis
+			const vaccXScale = d3.scaleTime()
+                    .range([0, graphWidth])
+			vaccsvg.append("g")
+				.attr("transform", "translate(0," + graphHeight + ")")
+				.attr("class","vaccXAxis")
+			
+			
+			const vaccYScale = d3.scaleLinear()
+                    .range([graphHeight, 0])
+			vaccsvg.append("g")
+				.attr("class", "vaccYAxis")
+
+
+//----------------------CASE GRAPH SETUP---------------------------------
+
+
+			d3.select("#visualisationArea")
+				.append("svg")
+					.attr("class", "caseGraph")
+			    	.attr("width", graphWidth + graphMargin.left + graphMargin.right)
+			    	.attr("height", graphHeight + graphMargin.top + graphMargin.bottom)
+			  	.append("g")
+			    	.attr("transform", "translate(" + graphMargin.left + "," + graphMargin.top + ")")
+
+			const casesvg = d3.select("svg.caseGraph")			  
+
+
+			//Create the scale for the x and y axis
+			const caseXScale = d3.scaleTime()
+                    .range([0, graphWidth])
+			casesvg.append("g")
+				.attr("transform", "translate(0," + graphHeight + ")")
+				.attr("class","caseXAxis")
+			
+			
+			const caseYScale = d3.scaleLinear()
+                    .range([graphHeight, 0])
+			casesvg.append("g")
+				.attr("class", "caseYAxis")
+
+
+
+
+//----------------------DEATHS BAR CHART SETUP---------------------------------
+
+
+
+
+d3.select("#visualisationArea")
+				.append("svg")
+					.attr("class", "deathChart")
+			    	.attr("width", graphWidth + graphMargin.left + graphMargin.right)
+			    	.attr("height", graphHeight + graphMargin.top + graphMargin.bottom)
+			  	.append("g")
+			    	.attr("transform", "translate(" + graphMargin.left + "," + graphMargin.top + ")")
+
+			const deathsvg = d3.select("svg.deathChart")			  
+
+
+			
+
+//----------------------------CSV READING----------------------------	
+
+        	Promise.all([
+        	d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson"),
+        	d3.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv"),
+        	d3.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/jhu/full_data.csv"),
+			d3.csv("https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/latest/owid-covid-latest.csv")
+        	]).then(function (data) {
+				let dataGeo = data[0]
+        		let vaccData = data[1]
+        		let caseData = data[2]
+				let deathData = data[3]
+
+
+//-------------------------MAP GENERATION-----------------------------
+
+        	    // Draw the map
+        	    mapsvg.append("g")
+        	    .selectAll("path")
+        	    	.data(dataGeo.features)
+        	        .join("path")
+        	            .attr("fill", "gray")
+        	            .attr("d", d3.geoPath()
+        	              .projection(projection)
+        	            )
+        	            .style("stroke", "#fff")
+
+//----------------------MAP INTERACTION RULES--------------------------
+
+        	    .on("mouseover", function(event, d){
+					d3.select(this)
+						.transition()
+							.style("fill", "red")
+							.duration(300)
+							
+        	    })
+
+				.on("mousemove", function(event, d){
+                	updateTooltip(d.properties.name)
+				})
+
+				.on("mouseout", function (event, d) {
+					d3.select(this)
+						.transition()
+							.style("fill", "gray")
+							.duration(300)
+						d3.select("div.tooltip")
+						.style("opacity", "0")
+				})
+
+
+				.on("click", function(event, d){
+					updateGraphs(d.properties.name)
+				})
+
+
+//------------------------------UPDATE TOOLTIP-------------------------------
+
+			function updateTooltip(country) {
+				
+				//Filter the data to the country that is being hovered over
+            	filteredCaseData = d3.filter(caseData, function(d){
+                      if(d.location == country && d.total_vaccinations!=0){
+                          return d
+                      }
+                  })
+                  filteredCaseData = filteredCaseData.reverse()
+
+                
+                //Show tooltip with case data
+                d3.select("div.tooltip")
+                .style("opacity", 1).html(country + "<br> New Cases: "+ filteredCaseData[0].new_cases +"<br>Date: " + filteredCaseData[0].date)
+                .style("text-align", "center")
+				.style("left", (event.x)-80 + "px")
+				.style("top", (event.y)-80 + "px")
+			}
+
+
+//--------------------HIGHLIGHT COUNTRY FROM BAR CHART (NO WORKY)----------------------
+				function highlightCountry(country){
+					var highlightCountry = d3.select(dataGeo, function(d){
+						if(d.properties.name == country){
+							return d
+						}
+					})
+				}
+
+
+//-----------------------GENERATE BAR CHART FOR DEATHS--------------------
+
+		//FILTER DATASET FOR DEATHS TO SHOW TOP 10 COUNTRIES WITH THE MOST DEATHS
+
+			filteredDeathData = deathData.sort(function(a,b){
+				return d3.descending(+a.total_deaths, +b.total_deaths);				
+			})
+			filteredDeathData = deathData.splice(9, 11)	
+
+			//Create the scale for the x and y axis
+			const deathXScale = d3.scaleBand()
+                    .range([0, graphWidth])
+					.domain(filteredDeathData.map(d => d.location))
+					.padding(0.2)
+				deathsvg.append("g")
+					.attr("transform", "translate(0," + graphHeight + ")")
+					.call(d3.axisBottom(deathXScale))
+
+
+			const deathYScale = d3.scaleLinear()
+                    .range([graphHeight, 0])
+					.domain([0, d3.max(filteredDeathData, d => +d.total_deaths) ])
+				deathsvg.append("g")
+				.call(d3.axisLeft(deathYScale))
+
+				console.log(filteredDeathData)
+
+			deathsvg.append("text")
+        	.attr("x", (graphWidth / 2))             
+        	.attr("y", 20 - (graphMargin.top / 2))
+        	.attr("text-anchor", "middle")
+			.style("font-family", "Arial")  
+        	.style("font-size", "16px") 
+        	.text("Total Deaths Per Country");
+
+			// Add the bars
+			deathsvg.selectAll("deathBars")
+			  .data(filteredDeathData)
+			  .join("rect")
+			    .attr("x", d => deathXScale(d.location))
+			    .attr("width", deathXScale.bandwidth())
+			    .attr("fill", "red")
+			    // no bar at the beginning thus:
+			    .attr("height", d => graphHeight - deathYScale(0)) // always equal to 0
+			    .attr("y", d => deathYScale(0))
+
+				
+
+			.on("mouseover", function(event, d){
+				d3.select(this)
+					.transition()
+						.style("fill", "blue")
+						.duration(400)
+						highlightCountry(d.location)
+						
+        	})
+
+			.on("mouseout", function(event, d){
+				d3.select(this)
+					.transition()
+						.style("fill", "red")
+						.duration(800)
+			})
+
+
+			// Animation
+			deathsvg.selectAll("rect")
+			  .transition()
+			  .duration(1000)
+			  .attr("y", d => deathYScale(+d.total_deaths))
+			  .attr("height", d => graphHeight - deathYScale(+d.total_deaths))
+			  .delay((d,i) => {return i*100})
+
+//--------------------------UPDATE GRAPHS ON MAP CLICK----------------------------
+
+			function updateGraphs(country){
+
+
+			//------------------FILTER DATASETS-----------------------------
+			
+				//Filter the data to the country that is being hovered over
+				filteredVaccData = d3.filter(vaccData, function(d){
+                      if(d.location == country && +d.total_vaccinations!=0){
+                          return d
+                      }
+                })
+
+
+				//Filter the data to the country that is being hovered over
+                filteredCaseData = d3.filter(caseData, function(d){
+                      if(d.location == country && +d.new_cases!=0){
+                          return d
+                      }
+                  })
+
+				
+			//---------------SETUP AXES FOR VACC GRAPH---------------------------------------
+				
+				//Set the maximum and minimum values for the axes of the graph (d3.extent returns the max and min of an array in an array)
+				const vaccXExtent = d3.extent(filteredVaccData, function(d){
+                    return d3.timeParse("%Y-%m-%d")(d.date) //Parse the date into JS format so D3 can read (defaults to string when read from CSV)
+                })
+
+                const vaccYExtent = d3.extent(filteredVaccData, function(d){
+                    return +d.total_vaccinations //Parse the total vaccinations as integers, strings by default
+                })
+
+				vaccsvg.append("text")
+        			.attr("x", (graphWidth / 2))             
+        			.attr("y", 20 - (graphMargin.top / 2))
+        			.attr("text-anchor", "middle")  
+        			.style("font-size", "16px") 
+					.style("font-family", "Arial")
+        			.text("Vaccinations");
+
+				//Add the new scales for the selected country
+				vaccXScale.domain([vaccXExtent[0], vaccXExtent[1]]);
+  				vaccsvg.selectAll(".vaccXAxis")
+  				  .transition()
+  				  .duration(1000)
+  				  .call(d3.axisBottom(vaccXScale));
+
+
+				vaccYScale.domain([vaccYExtent[0], vaccYExtent[1]]);
+  				vaccsvg.selectAll(".vaccYaxis")
+  				  .transition()
+  				  .duration(1000)
+  				  .call(d3.axisLeft(vaccYScale));
+
+									
+				//---------------SETUP AXES FOR CASE GRAPH---------------------------------------
+				
+				//Set the maximum and minimum values for the axes of the graph (d3.extent returns the max and min of an array in an array)
+				const caseXExtent = d3.extent(filteredCaseData, function(d){
+                    return d3.timeParse("%Y-%m-%d")(d.date) //Parse the date into JS format so D3 can read (defaults to string when read from CSV)
+                })
+
+                const caseYExtent = d3.extent(filteredCaseData, function(d){
+                    return +d.new_cases //Parse the total vaccinations as integers, strings by default
+                })
+
+				//Add the new scales for the selected country
+				caseXScale.domain([caseXExtent[0], caseXExtent[1]]);
+  				casesvg.selectAll(".caseXAxis")
+  				  .transition()
+  				  .duration(1000)
+  				  .call(d3.axisBottom(caseXScale));
+
+
+				caseYScale.domain([caseYExtent[0], caseYExtent[1]]);
+  				casesvg.selectAll(".caseYaxis")
+  				  .transition()
+  				  .duration(1000)
+  				  .call(d3.axisLeft(caseYScale));
+
+
+				casesvg.append("text")
+        		.attr("x", (graphWidth / 2))             
+        		.attr("y", 20 - (graphMargin.top / 2))
+        		.attr("text-anchor", "middle")
+				.style("font-family", "Arial")  
+        		.style("font-size", "16px") 
+        		.text("New Cases");
+			
+
+			//--------------UPDATE EXISTING VACC GRAPH LINE TO NEW LINE-------------
+
+  				// Create a update selection: bind to the new data
+  				var updateVacc = vaccsvg.selectAll(".vaccLine")
+  				  .data([filteredVaccData], function(d){return d3.timeParse("%Y-%m-%d")(d.date) });
+
+  				// Update the line
+  				updateVacc
+  				  .enter()
+  				  .append("path")
+  				  .attr("class","vaccLine")
+  				  .merge(updateVacc)
+  				  .transition()
+  				  .duration(1000)
+  				  .attr("d", d3.line()
+  				    .x(function(d) { return vaccXScale(d3.timeParse("%Y-%m-%d")(d.date)); })
+  				    .y(function(d) { return vaccYScale(+d.total_vaccinations); }))
+  				    .attr("fill", "none")
+  				    .attr("stroke", "blue")
+  				    .attr("stroke-width", 2.5)
+
+			//--------------UPDATE EXISTING CASE GRAPH LINE TO NEW LINE-------------
+
+  				// Create a update selection: bind to the new data
+  				var updateCase = casesvg.selectAll(".caseLine")
+  				  .data([filteredCaseData], function(d){return d3.timeParse("%Y-%m-%d")(d.date) });
+
+  				// Update the line
+  				updateCase
+  				  .enter()
+  				  .append("path")
+  				  .attr("class","caseLine")
+  				  .merge(updateCase)
+  				  .transition()
+  				  .duration(1000)
+  				  .attr("d", d3.line()
+  				    .x(function(d) { return caseXScale(d3.timeParse("%Y-%m-%d")(d.date)); })
+  				    .y(function(d) { return caseYScale(+d.new_cases); }))
+  				    .attr("fill", "none")
+  				    .attr("stroke", "red")
+  				    .attr("stroke-width", 2.5)
+			
+				}//End  of updateGraphs()
+			
+			updateGraphs("Australia")
+		})
+
+
+             
+        </script>
+    </body>
+</html>

@@ -1,0 +1,634 @@
+<!--
+Author: Christohper Henderson
+Project: Data Visualisation and Analytics Lab 4
+Date: 02/04/22
+URL: https://github.com/thechenderson/Data-Visualisation-Coursework
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Scottish Energy Usage Dashboard</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src='https://d3js.org/d3.v7.min.js'></script>
+
+    </head>
+    <body>
+    <h1 style="display: block; margin: auto; text-align: center; font-family: Arial, Helvetica, sans-serif;">An Overview of How Scotland Uses it's Energy</h1>
+	
+	<div style="display: block; margin: auto; text-align: center;" id="visualisationArea1"></div>
+
+
+    
+
+	<div style="display: block; margin: auto; text-align: center;" id="visualisationArea2"></div>
+	<div style="display: block; margin: auto; text-align: center;" id="buttonContainer">
+		<button onclick="updateBarCharts(2005)">2005</button>
+		<button onclick="updateBarCharts(2006)">2006</button>
+		<button onclick="updateBarCharts(2007)">2007</button>
+		<button onclick="updateBarCharts(2008)">2008</button>
+		<button onclick="updateBarCharts(2009)">2009</button>
+		<button onclick="updateBarCharts(2010)">2010</button>
+		<button onclick="updateBarCharts(2011)">2011</button>
+		<button onclick="updateBarCharts(2012)">2012</button>
+		<button onclick="updateBarCharts(2013)">2013</button>
+		<button onclick="updateBarCharts(2014)">2014</button>
+		<button onclick="updateBarCharts(2015)">2015</button>
+		<button onclick="updateBarCharts(2016)">2016</button>
+		<button onclick="updateBarCharts(2017)">2017</button>
+		<button onclick="updateBarCharts(2018)">2018</button>
+		<button onclick="updateBarCharts(2019)">2019</button>
+	  </div>    
+
+	
+    <script>
+
+      // set the dimensions and margins of the graphs
+      const margin = {top: 80, right: 30, bottom: 20, left: 60},
+          width = 800 - margin.left - margin.right,
+          height = 600 - margin.top - margin.bottom;
+
+
+      //--------------------------INITALISE ENERGY USAGE BY SECTOR BAR CHART---------------------------
+      
+      // Append SVG for energy usage by sector bar chart
+      const energyUsageBySectorSVG = d3.select("#visualisationArea2")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+          
+
+      // Initialize the X axis
+      const energyUsageBySectorX = d3.scaleBand()
+        .range([ 0, width ])
+        .padding(0.2);
+      const energyUsageBySectorXAxis = energyUsageBySectorSVG.append("g")
+        .attr("transform", `translate(0,${height})`);
+      
+      // Initialize the Y axis
+      const energyUsageBySectorY = d3.scaleLinear()
+        .range([ height, 0]);
+      const energyUsageBySectorYAxis = energyUsageBySectorSVG.append("g")
+        .attr("class", "myYaxis");
+    
+      //Initialise chart title
+			energyUsageBySectorSVG.append("text")
+          .attr("class", "energyUsageBySectorTitle")
+      		.attr("x", (width / 2))             
+      		.attr("y", 20 - (margin.top / 2))
+      		.attr("text-anchor", "middle")
+			    .style("font-family", "Arial")  
+      		.style("font-size", "16px")
+
+
+//--------------------------INITALISE ENERGY USAGE BY TYPE BAR CHART---------------------------
+      
+      // Append SVG for energy usage by sector bar chart
+      const energyUsageByTypeSVG = d3.select("#visualisationArea2")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", `translate(${margin.left},${margin.top})`);
+          
+
+      // Initialize the X axis
+      const energyUsageByTypeX = d3.scaleBand()
+        .range([ 0, width ])
+        .padding(0.2);
+      const energyUsageByTypeXAxis = energyUsageByTypeSVG.append("g")
+        .attr("transform", `translate(0,${height})`);
+      
+      // Initialize the Y axis
+      const energyUsageByTypeY = d3.scaleLinear()
+        .range([ height, 0]);
+      const energyUsageByTypeYAxis = energyUsageByTypeSVG.append("g")
+        .attr("class", "myYaxis");
+    
+      //Initialise chart title
+	  	energyUsageByTypeSVG.append("text")
+          .attr("class", "energyUsageByTypeTitle")
+      		.attr("x", (width / 2))             
+      		.attr("y", 20 - (margin.top / 2))
+      		.attr("text-anchor", "middle")
+			    .style("font-family", "Arial")  
+      		.style("font-size", "16px")			  
+    
+
+//------------------------SETUP LINE CHART FOR TOTAL ENERGY USAGE------------------------------------
+
+	//Append line chart for total energy use line chart
+	const totalEnergyUsageSVG = d3.select("#visualisationArea1")
+	.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+		.attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+//-----------------------SETUP LINE CHART FOR SECTOR ENERGY USAGE--------------------------------------
+
+		const sectorEnergyUsageSVG = d3.select("#visualisationArea1")
+			.append("svg")
+				.attr("width", width + margin.left + margin.right)
+  		  		.attr("height", height + margin.top + margin.bottom)
+  			.append("g")
+  		  		.attr("transform", `translate(${margin.left},${margin.top})`);
+
+	Promise.all([
+    	d3.csv("http://localhost:5500/Lab%204/energyusage.csv"),  //Data Available from here: https://statistics.gov.scot/slice?dataset=http%3A%2F%2Fstatistics.gov.scot%2Fdata%2Fenergy-consumption&http%3A%2F%2Fpurl.org%2Flinked-data%2Fsdmx%2F2009%2Fdimension%23refPeriod=http%3A%2F%2Freference.data.gov.uk%2Fid%2Fyear%2F2019&http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fdimension%2FenergyConsumingSector=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Fenergy-consuming-sector%2Fall&http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fdimension%2FenergyType=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Fenergy-type%2Felectricity
+		d3.csv("http://localhost:5500/Lab%204/renewable.csv")  //Data Available from here: https://statistics.gov.scot/resource?uri=http%3A%2F%2Fstatistics.gov.scot%2Fdata%2Frenewable-electricity	
+	]).then(function (data) {
+			let energyData = data[0]
+			let renewableData = data[1]
+
+
+//------------------------SETUP LINE CHART FOR RENEWABLE ENERGY USAGE------------------------------------
+
+			//Append line chart for total energy use line chart
+			const renewableEnergyUsageSVG = d3.select("#visualisationArea1")
+			.append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+				.attr("transform", `translate(${margin.left},${margin.top})`);			
+
+//-------------------------CREATE DATA FOR TOTAL ENERGY USAGE LINE CHART---------------------------
+
+			filteredEnergyData = [
+				{
+				"Year" : "2005",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2005") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2006",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2006") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2007",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2007") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2008",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2008") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2009",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2009") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2010",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2010") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2011",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2011") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2012",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2012") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2013",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2013") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2014",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2014") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2015",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2015") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2016",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2016") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2017",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2017") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2018",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2018") {
+						return d
+					}
+				}),d => d.Value)
+				},
+				{
+				"Year" : "2019",
+				"Value" : d3.sum(d3.filter(energyData, function(d){
+					if(d.DateCode == "2019") {
+						return d
+					}
+				}),d => d.Value)
+				}
+			]
+
+//----------------------------CREATE DATA FOR LINE CHART OF USAGE BY SECTOR-------------------------------
+
+
+			maxy = d3.max(d3.rollup(energyData, v => d3.sum(v , d => d.Value), d => d.Value), d => d)
+			
+			groupedData = d3.sort(d3.rollup(energyData, v => d3.sum(v, d=> d.Value), d => d.DateCode, d => d.EnergyConsumingSector))
+			console.log(groupedData)
+
+			
+
+//-------------------------	--------CREATE LINE CHART FOR SECTOR ENERGY USAGE-------------------------
+
+			//Create x axis
+			const sectorEneryUsageXExtent = d3.extent(groupedData, function(d){
+                    return d3.timeParse("%Y")(d[0]) //Parse the date into JS format so D3 can read (defaults to string when read from CSV)
+            })
+
+			const sectorEnergyUsageX = d3.scaleTime()
+				.domain([sectorEneryUsageXExtent[0], sectorEneryUsageXExtent[1]])
+				.range([0, width])
+				sectorEnergyUsageSVG.append("g")
+					.attr("transform", "translate(0," + height + ")")
+					.call(d3.axisBottom(sectorEnergyUsageX))
+
+			
+
+			//Create y axis
+			const sectorEnergyUsageY = d3.scaleLinear()
+				.domain([0, maxy[0]])
+				.range([height, 0])
+			sectorEnergyUsageSVG.append("g")
+				.call(d3.axisLeft(sectorEnergyUsageY))
+
+				// Draw the line
+  			.selectAll(".line")
+  			    .data(groupedData)
+  			    .join("path")	
+  			      .attr("fill", "none")
+  			      .attr("stroke-width", 1.5)
+  			      .attr("d", function(d){
+  			        return d3.line()
+  			          .x(function(d) { return sectorEnergyUsageX(d3.timeParse("%Y")(function(d){d[0]})); })
+  			          .y(function(d) { return sectorEnergyUsageY(+d[0].Value); })
+  			      })	
+
+					//Initialise chart title
+			sectorEnergyUsageSVG.append("text")
+      		.attr("x", (width / 2))             
+      		.attr("y", 20 - (margin.top / 2))
+      		.attr("text-anchor", "middle")
+			.text("Total Energy Usage - 2005-2019 (GWh)")
+			.style("font-family", "Arial")  
+      		.style("font-size", "16px")
+			.text("Sector Energy Usage - 2005-2019 (GWh)")
+
+//--------------------------CREATE LINE CHART FOR TOTAL ENERGY USAGE-------------------------
+
+			//Create x axis
+			const totalEneryUsageXExtent = d3.extent(filteredEnergyData, function(d){
+                    return d3.timeParse("%Y")(d.Year) //Parse the date into JS format so D3 can read (defaults to string when read from CSV)
+            })
+
+			const totalEnergyUsageX = d3.scaleTime()
+				.domain([totalEneryUsageXExtent[0], totalEneryUsageXExtent[1]])
+				.range([0, width])
+				totalEnergyUsageSVG.append("g")
+					.attr("transform", "translate(0," + height + ")")
+					.call(d3.axisBottom(totalEnergyUsageX))
+			
+			//Create y axis
+			const totalEnergyUsageY = d3.scaleLinear()
+				.domain([d3.min(filteredEnergyData, function(d) { return +d.Value; }), d3.max(filteredEnergyData, function(d) { return +d.Value; })])
+				.range([height, 0])
+			totalEnergyUsageSVG.append("g")
+				.call(d3.axisLeft(totalEnergyUsageY))
+
+			//Create line
+			totalEnergyUsageSVG.append("path")
+			.datum(filteredEnergyData)
+			.attr("fill", "none")
+			.attr("stroke-width", 2)
+			.attr("stroke", "red")
+			.attr("d", d3.line()
+				.x(function(d){
+					return totalEnergyUsageX(d3.timeParse("%Y")(d.Year))
+				})
+				.y(function(d){
+					return totalEnergyUsageY(+d.Value)
+				})	
+			)
+
+
+		
+			//Initialise chart title
+			totalEnergyUsageSVG.append("text")
+      		.attr("x", (width / 2))             
+      		.attr("y", 20 - (margin.top / 2))
+      		.attr("text-anchor", "middle")
+			.text("Total Energy Usage - 2005-2019 (GWh)")
+			.style("font-family", "Arial")  
+      		.style("font-size", "16px")
+
+
+//--------------------------CREATE LINE CHART FOR RENEWABLE ENERGY USAGE-------------------------
+
+			//Create x axis
+			const renewableEneryUsageXExtent = d3.extent(renewableData, function(d){
+                    return d3.timeParse("%Y")(d.DateCode) //Parse the date into JS format so D3 can read (defaults to string when read from CSV)
+            })
+
+			const renewableEneryUsageX = d3.scaleTime()
+				.domain([renewableEneryUsageXExtent[0], renewableEneryUsageXExtent[1]])
+				.range([0, width])
+				renewableEnergyUsageSVG.append("g")
+					.attr("transform", "translate(0," + height + ")")
+					.call(d3.axisBottom(renewableEneryUsageX))
+			
+			//Create y axis
+			const renewableEneryUsageY = d3.scaleLinear()
+				.domain([0, 100])
+				.range([height, 0])
+				renewableEnergyUsageSVG.append("g")
+				.call(d3.axisLeft(renewableEneryUsageY))
+
+			//Create line
+			renewableEnergyUsageSVG.append("path")
+			.datum(renewableData)
+			.attr("fill", "none")
+			.attr("stroke-width", 2)
+			.attr("stroke", "red")
+			.attr("d", d3.line()
+				.x(function(d){
+					return renewableEneryUsageX(d3.timeParse("%Y")(d.DateCode))
+				})
+				.y(function(d){
+					return renewableEneryUsageY(+d.Value)
+				})	
+			)
+
+
+		
+			//Initialise chart title
+			renewableEnergyUsageSVG.append("text")
+      		.attr("x", (width / 2))             
+      		.attr("y", 20 - (margin.top / 2))
+      		.attr("text-anchor", "middle")
+			.text("Electrical Energy Produced by Renewable Sources - 2000-2020 (%)")
+			.style("font-family", "Arial")  
+      		.style("font-size", "16px")
+
+			
+		}
+	)
+
+//--------------------------------UPDATE THE BAR CHARTS FOR SELECTED YEAR--------------------------------
+
+    function updateBarCharts(year) {
+      
+    	Promise.all([
+        	d3.csv("http://localhost:5500/Lab%204/energyusage.csv")  //Data Available from here: https://statistics.gov.scot/slice?dataset=http%3A%2F%2Fstatistics.gov.scot%2Fdata%2Fenergy-consumption&http%3A%2F%2Fpurl.org%2Flinked-data%2Fsdmx%2F2009%2Fdimension%23refPeriod=http%3A%2F%2Freference.data.gov.uk%2Fid%2Fyear%2F2019&http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fdimension%2FenergyConsumingSector=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Fenergy-consuming-sector%2Fall&http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fdimension%2FenergyType=http%3A%2F%2Fstatistics.gov.scot%2Fdef%2Fconcept%2Fenergy-type%2Felectricity
+        	]).then(function (data) {
+				let energyData = data[0]
+
+			//--------------------------Create bar chart for energy usage by sector------------------------------
+				
+			//Create an array of all of the data required for the bar chart
+			filteredEnergyDataSector = [{
+				"Sector" : "Agriculture",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Agriculture") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"Sector" : "Commercial",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Commercial") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"Sector" : "Domestic",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Domestic") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"Sector" : "Industrial",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Industrial") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"Sector" : "Public Sector",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Industrial") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"Sector" : "Rail",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Rail") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"Sector" : "Transport",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyConsumingSector == "Transport") {
+									return d
+								}
+							}), d => d.Value)
+			},		
+			]
+
+
+			//Create an array of all of the data required for the bar chart
+			filteredEnergyDataType = [{
+				"EnergyType" : "Bioenergy & Wastes",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyType == "Bioenergy & Wastes") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"EnergyType" : "Coal",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyType == "Coal") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"EnergyType" : "Electricity",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyType == "Electricity") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"EnergyType" : "Gas",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyType == "Gas") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"EnergyType" : "Manufactured Fuels",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyType == "Manufactured Fuels") {
+									return d
+								}
+							}), d => d.Value)
+			},
+			{
+				"EnergyType" : "Petroleum Products",
+				"Value" : 	d3.sum(d3.filter(energyData, function(d){
+								if(d.DateCode == year && d.EnergyType == "Petroleum Products") {
+									return d
+								}
+							}), d => d.Value)
+			}		
+			]
+
+		//Sort by lowest to highest value so chart looks nicer
+        filteredEnergyDataSector = d3.sort(filteredEnergyDataSector, d => d.Value)
+		filteredEnergyDataType = d3.sort(filteredEnergyDataType, d => d.Value)
+
+
+          // update X axis
+          energyUsageBySectorX.domain(filteredEnergyDataSector.map(d => d.Sector));
+          energyUsageBySectorXAxis.transition().duration(1000).call(d3.axisBottom(energyUsageBySectorX));
+
+		  energyUsageByTypeX.domain(filteredEnergyDataType.map(d => d.EnergyType));
+          energyUsageByTypeXAxis.transition().duration(1000).call(d3.axisBottom(energyUsageByTypeX));
+		  
+      
+          // update Y axis
+          energyUsageBySectorY.domain([0, d3.max(filteredEnergyDataSector, d => +d.Value)]);
+          energyUsageBySectorYAxis.transition().duration(1000).call(d3.axisLeft(energyUsageBySectorY));
+
+		  energyUsageByTypeY.domain([0, d3.max(filteredEnergyDataType, d => +d.Value)]);
+          energyUsageByTypeYAxis.transition().duration(1000).call(d3.axisLeft(energyUsageByTypeY));
+      
+          // map the data to the bars that have been added
+          const u1 = energyUsageBySectorSVG.selectAll("rect")
+            .data(filteredEnergyDataSector)
+          
+			u1.join("rect")
+            .transition()
+            .duration(1000)
+              .attr("x", d => energyUsageBySectorX(d.Sector))
+              .attr("y", d => energyUsageBySectorY(+d.Value))
+              .attr("width", energyUsageBySectorX.bandwidth())
+              .attr("height", d => height - energyUsageBySectorY(+d.Value))
+              .attr("fill", "blue")
+              
+			  energyUsageBySectorSVG.select(".energyUsageBySectorTitle")
+        		.text("Energy Usage By Sector in " + year);
+
+
+			// map the data to the bars that have been added
+			const u2 = energyUsageByTypeSVG.selectAll("rect")
+            .data(filteredEnergyDataType)
+          
+			u2.join("rect")
+            .transition()
+            .duration(1000)
+              .attr("x", d => energyUsageByTypeX(d.EnergyType))
+              .attr("y", d => energyUsageByTypeY(+d.Value))
+              .attr("width", energyUsageByTypeX.bandwidth())
+              .attr("height", d => height - energyUsageByTypeY(+d.Value))
+              .attr("fill", "blue")
+            // .append("text")
+			// 	.attr("x", function(d){
+			// 		return energyUsageByTypeX(d.EnergyType)
+			// 	})
+			// 	.attr("y", function(d){
+			// 		return energyUsageByTypeY(+d.Value)
+			// 	})
+			// 	.text(function(d){
+			// 		return d.Value
+			// 	})
+			// 	.attr()
+			  energyUsageByTypeSVG.select(".energyUsageByTypeTitle")
+        		.text("Energy Usage By Type in " + year);	
+
+
+        })//End of csv reading promise
+    }//end of update bar chart function
+      
+      // Initialize plots
+      updateBarCharts(2019)
+      
+      </script>
+    </body>
+</html>
